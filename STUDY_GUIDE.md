@@ -19,13 +19,45 @@
 
 不必全部学完再读项目。遇到相关代码时，按需补充以下知识：
 
-- Python：类、继承、dataclass、property、迭代器和 multiprocessing。
-- PyTorch：Tensor shape、`nn.Module`、矩阵乘法、softmax、distributed collective。
-- Transformer：Embedding、Self-Attention、MLP、残差连接、RMSNorm、RoPE。
-- 大模型推理：tokenizer、autoregressive generation、prefill、decode、KV Cache。
-- CUDA 基础：GPU 显存、kernel launch；Triton 和 CUDA Graph 可以最后再学。
+- Python：类、继承、dataclass、property、迭代器和 multiprocessing。新手可以先学习 [面向 Nano-vLLM 的 Python 入门](ai_background_knowledge/01_python_for_nano_vllm.md)，并运行配套的纯 CPU 练习。
+- PyTorch：Tensor shape、`nn.Module`、矩阵乘法、softmax、distributed collective。参见 [PyTorch 与 Tensor：先学会追踪 shape](ai_background_knowledge/02_pytorch_and_tensors.md)。
+- Transformer：Embedding、Self-Attention、MLP、残差连接、RMSNorm、RoPE。参见 [Transformer 基础：跟着一个 token 走完 Qwen3](ai_background_knowledge/03_transformer_basics.md)。
+- 大模型推理：tokenizer、autoregressive generation、prefill、decode、KV Cache。参见 [大模型推理基础：从 prompt 到逐 token 生成](ai_background_knowledge/04_llm_inference_basics.md)。
+- CUDA 基础：GPU 显存、kernel launch；Triton 和 CUDA Graph 可以最后再学。参见 [GPU、CUDA 与并行基础](ai_background_knowledge/05_gpu_cuda_and_parallelism.md)。
 
 本项目运行依赖 NVIDIA GPU、CUDA/NCCL、FlashAttention 和 Triton。没有合适 GPU 时仍然可以完成静态阅读、画调用链以及为调度器和块管理器编写纯 CPU 单元测试。
+
+### 2.1 创建 Conda 学习环境
+
+项目支持 Python `>=3.10,<3.13`。推荐使用 Python 3.11，并将环境统一命名为 `vllm`：
+
+```bash
+conda create -n vllm python=3.11 pip -y
+conda activate vllm
+python -m pip install --upgrade pip
+```
+
+如果只运行 `ai_background_knowledge/examples/` 下的 CPU 练习，安装 CPU 版 PyTorch 即可：
+
+```bash
+python -m pip install "torch>=2.4" --index-url https://download.pytorch.org/whl/cpu
+```
+
+不要为 CPU 背景练习执行 `python -m pip install -e .`，因为它会安装 Nano-vLLM 声明的 Triton、FlashAttention 等 GPU 依赖。更完整的命令、环境验证方式和示例运行条件参见 [AI 背景知识目录](ai_background_knowledge/README.md#conda-环境准备)。
+
+### 2.2 哪些示例需要 GPU
+
+| 示例 | 运行设备 | 额外条件 |
+| --- | --- | --- |
+| `ai_background_knowledge/examples/01_python_basics.py` | CPU | 仅标准库 |
+| `ai_background_knowledge/examples/02_pytorch_tensors.py` | CPU | CPU 版 PyTorch |
+| `ai_background_knowledge/examples/03_transformer_basics.py` | CPU | CPU 版 PyTorch |
+| `ai_background_knowledge/examples/04_llm_inference.py` | CPU | 仅标准库 |
+| `ai_background_knowledge/examples/05_gpu_parallelism.py` | CPU | 仅标准库；不执行 CUDA |
+| `example.py` | **NVIDIA GPU** | CUDA/NCCL、CUDA 版 PyTorch、Triton、FlashAttention、模型权重 |
+| `bench.py` | **NVIDIA GPU** | 与 `example.py` 相同，且基准负载更大 |
+
+因此，没有 NVIDIA GPU 时可以完整学习五篇背景知识并运行其全部配套脚本，但不能运行项目根目录的 `example.py` 和 `bench.py`。PyTorch 的 CUDA 安装命令取决于机器驱动与 CUDA 环境，应通过 [PyTorch 官方安装选择器](https://pytorch.org/get-started/locally/) 获取。
 
 ## 3. 项目地图
 
@@ -119,7 +151,7 @@ git commit -m "docs: annotate generation workflow"
 
 ```bash
 python -m pip install -e .
-python example.py
+python example.py  # 需要 NVIDIA GPU
 ```
 
 ### 阶段 2：读懂生成主循环
