@@ -113,6 +113,7 @@ class LLMEngine:
 
         # generate() 同时支持字符串和已经编码好的 token ID 列表。后者适合基准
         # 测试，也能避免重复 tokenize。Chat Template 需要调用者预先处理。
+        # “如果传进来的 prompt 是一个字符串（str），那么就用分词器（tokenizer）把它编码（encode）成数字列表，覆盖掉原来的变量。”
         if isinstance(prompt, str):
             prompt = self.tokenizer.encode(prompt)
 
